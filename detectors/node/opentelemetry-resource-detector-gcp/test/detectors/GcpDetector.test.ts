@@ -223,7 +223,7 @@ describe('gcpDetector', () => {
     
       const attrs = resource.attributes;
     
-      // Inline attribute checks (style-consistent with other helpers)
+      // This should be moved to the @opentelemetry/contrib-test-utils and replaced once available.
       if (
         attrs['faas.name'] !== 'my-cloud-run-service' ||
         attrs['faas.version'] !== 'my-cloud-run-revision' ||
