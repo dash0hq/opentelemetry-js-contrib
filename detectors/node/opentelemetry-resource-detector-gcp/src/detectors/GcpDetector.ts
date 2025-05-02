@@ -37,7 +37,6 @@ import {
   SEMRESATTRS_FAAS_NAME,
   SEMRESATTRS_FAAS_INSTANCE,
   SEMRESATTRS_FAAS_VERSION,
-
 } from '@opentelemetry/semantic-conventions';
 
 /**
