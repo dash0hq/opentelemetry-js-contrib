@@ -72,9 +72,7 @@ class GcpDetector implements ResourceDetector {
     if (process.env.K_SERVICE) {
       attributes[SEMRESATTRS_FAAS_NAME] = process.env.K_SERVICE;
       attributes[SEMRESATTRS_FAAS_VERSION] = process.env.K_REVISION;
-      attributes[SEMRESATTRS_FAAS_INSTANCE] = (async () => {
-        return (await isAvail) ? this._getInstanceId(isAvail) : undefined;
-      })();
+      attributes[SEMRESATTRS_FAAS_INSTANCE] = this._getInstanceId(isAvail);
     }
 
     // Add resource attributes for K8s.
