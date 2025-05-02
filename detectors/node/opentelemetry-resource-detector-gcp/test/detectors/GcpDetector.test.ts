@@ -55,6 +55,8 @@ describe('gcpDetector', () => {
       delete process.env.NAMESPACE;
       delete process.env.CONTAINER_NAME;
       delete process.env.HOSTNAME;
+      delete process.env.K_SERVICE;
+      delete process.env.K_REVISION;
     });
 
     beforeEach(() => {
@@ -64,6 +66,8 @@ describe('gcpDetector', () => {
       delete process.env.NAMESPACE;
       delete process.env.CONTAINER_NAME;
       delete process.env.HOSTNAME;
+      delete process.env.K_SERVICE;
+      delete process.env.K_REVISION;
     });
 
     it('should return resource with GCP metadata', async () => {
@@ -181,5 +185,52 @@ describe('gcpDetector', () => {
       await resource.waitForAsyncAttributes?.();
       assertEmptyResource(resource);
     });
+
+    it('should populate Cloud Run attributes when K_SERVICE is set', async () => {
+      process.env.K_SERVICE = 'my-cloud-run-service';
+      process.env.K_REVISION = 'my-cloud-run-revision';
+    
+      const scope = nock(HOST_ADDRESS)
+        .get(INSTANCE_PATH)
+        .reply(200, {}, HEADERS)
+        .get(INSTANCE_ID_PATH)
+        .reply(200, () => '4520031799277581759', HEADERS)
+        .get(PROJECT_ID_PATH)
+        .reply(200, () => 'my-project-id', HEADERS)
+        .get(ZONE_PATH)
+        .reply(200, () => 'project/zone/my-zone', HEADERS)
+        .get(HOSTNAME_PATH)
+        .reply(200, () => 'dev.my-project.local', HEADERS);
+      const secondaryScope = nock(SECONDARY_HOST_ADDRESS)
+        .get(INSTANCE_PATH)
+        .reply(200, {}, HEADERS);
+    
+      const resource = detectResources({ detectors: [gcpDetector] });
+      await resource.waitForAsyncAttributes?.();
+    
+      secondaryScope.done();
+      scope.done();
+    
+      assertCloudResource(resource, {
+        provider: 'gcp',
+        accountId: 'my-project-id',
+        zone: 'my-zone',
+      });
+      assertHostResource(resource, {
+        id: '4520031799277581759',
+        name: 'dev.my-project.local',
+      });
+    
+      const attrs = resource.attributes;
+    
+      // Inline attribute checks (style-consistent with other helpers)
+      if (
+        attrs['faas.name'] !== 'my-cloud-run-service' ||
+        attrs['faas.version'] !== 'my-cloud-run-revision' ||
+        attrs['faas.instance'] !== '4520031799277581759'
+      ) {
+        throw new Error('Cloud Run faas.* attributes are not correctly populated');
+      }
+    });    
   });
 });
