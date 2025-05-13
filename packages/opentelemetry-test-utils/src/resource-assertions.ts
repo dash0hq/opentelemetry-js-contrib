@@ -22,10 +22,14 @@ import {
   SEMRESATTRS_CLOUD_AVAILABILITY_ZONE,
   SEMRESATTRS_CLOUD_PROVIDER,
   SEMRESATTRS_CLOUD_REGION,
+  SEMRESATTRS_CLOUD_PLATFORM,
   SEMRESATTRS_CONTAINER_ID,
   SEMRESATTRS_CONTAINER_IMAGE_NAME,
   SEMRESATTRS_CONTAINER_IMAGE_TAG,
   SEMRESATTRS_CONTAINER_NAME,
+  SEMRESATTRS_FAAS_INSTANCE,
+  SEMRESATTRS_FAAS_NAME,
+  SEMRESATTRS_FAAS_VERSION,
   SEMRESATTRS_HOST_ID,
   SEMRESATTRS_HOST_IMAGE_ID,
   SEMRESATTRS_HOST_IMAGE_NAME,
@@ -63,6 +67,7 @@ export const assertCloudResource = (
     accountId?: string;
     region?: string;
     zone?: string;
+    platform?: string;
   }
 ) => {
   assertHasOneLabel('cloud', resource);
@@ -85,6 +90,11 @@ export const assertCloudResource = (
     assert.strictEqual(
       resource.attributes[SEMRESATTRS_CLOUD_AVAILABILITY_ZONE],
       validations.zone
+    );
+  if (validations.platform)
+    assert.strictEqual(
+      resource.attributes[SEMRESATTRS_CLOUD_PLATFORM],
+      validations.platform
     );
 };
 
@@ -322,6 +332,40 @@ export const assertProcessResource = (
     assert.strictEqual(
       resource.attributes[SEMRESATTRS_PROCESS_COMMAND_LINE],
       validations.commandLine
+    );
+  }
+};
+
+/**
+ * Test utility method to validate a faas resource
+ *
+ * @param resource the Resource to validate
+ * @param validations validations for the resource attributes
+ */
+export const assertFaasResource = (
+  resource: Resource,
+  validations: {
+    name?: string;
+    instance?: string;
+    version?: string;
+  }
+) => {
+  if (validations.name) {
+    assert.strictEqual(
+      resource.attributes[SEMRESATTRS_FAAS_NAME],
+      validations.name
+    );
+  }
+  if (validations.instance) {
+    assert.strictEqual(
+      resource.attributes[SEMRESATTRS_FAAS_INSTANCE],
+      validations.instance
+    );
+  }
+  if (validations.version) {
+    assert.strictEqual(
+      resource.attributes[SEMRESATTRS_FAAS_VERSION],
+      validations.version
     );
   }
 };
